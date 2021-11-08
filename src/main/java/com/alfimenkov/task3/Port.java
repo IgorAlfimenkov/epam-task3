@@ -1,19 +1,23 @@
 package com.alfimenkov.task3;
 
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Port {
 
-    protected static int COUNT_DOCKS = 3;
-    protected static boolean[] DOCKS = new boolean[COUNT_DOCKS];
+    private static int COUNT_DOCKS;
+    protected static boolean[] DOCKS;
     private int  capacity;
+    protected ReentrantLock locker = new ReentrantLock();
 
-    protected static Semaphore SEMAPHORE = new Semaphore(DOCKS.length,
-            true);
+    protected static Semaphore SEMAPHORE;
 
-    public Port() {
+    public Port(int COUNT_DOCKS) {
 
-
+        this.COUNT_DOCKS = COUNT_DOCKS;
+        DOCKS = new boolean[this.COUNT_DOCKS];
+        setDOCKS();
+        SEMAPHORE = new Semaphore(DOCKS.length, true);
     }
 
     public void setDOCKS() {
@@ -27,15 +31,23 @@ public class Port {
         return capacity;
     }
 
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
+    public static int getCountDocks() {
+        return COUNT_DOCKS;
     }
 
-    public synchronized void changeCapacity(int value) {
+    public void addContainers(int value) {
 
         int capacity = this.capacity;
 
         capacity += value;
-         this.capacity = capacity;
+        this.capacity = capacity;
     }
+
+    public void removeContainers(int value) {
+
+        int capacity = this.capacity;
+        capacity -= value;
+        this.capacity = capacity;
+    }
+
 }

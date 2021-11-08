@@ -10,13 +10,12 @@ public class TestPort {
 
 
         //GIVEN
-        Port port = new Port();
-        port.setDOCKS();
+        Port port = new Port(3);
         Thread thread = new Thread(new Ship(1,port,5));
         Thread thread1 = new Thread(new Ship(2,port,10));
-        Thread thread2 = new Thread(new Ship(3,port,15));
+        Thread thread2 = new Thread(new Ship(3,port,15,true));
         Thread thread3 = new Thread(new Ship(4,port,20));
-        int expectedResult = 50;
+        int expectedResult = 20;
 
         //WHEN
         thread.start();
