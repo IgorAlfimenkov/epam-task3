@@ -8,9 +8,8 @@ public class Port {
     private static int COUNT_DOCKS;
     protected static boolean[] DOCKS;
     private int  capacity;
-    protected ReentrantLock locker = new ReentrantLock();
-
-    protected static Semaphore SEMAPHORE;
+    public ReentrantLock locker = new ReentrantLock();
+    public static Semaphore SEMAPHORE;
 
     public Port(int COUNT_DOCKS) {
 
@@ -33,6 +32,26 @@ public class Port {
 
     public static int getCountDocks() {
         return COUNT_DOCKS;
+    }
+
+    public void acquire() throws InterruptedException {
+
+        this.SEMAPHORE.acquire();
+    }
+
+    public void release() {
+
+        this.SEMAPHORE.release();
+    }
+
+    public void lock() {
+
+        this.locker.lock();
+    }
+
+    public void unlock() {
+
+        this.locker.unlock();
     }
 
     public void addContainers(int value) {

@@ -1,5 +1,6 @@
 package com.alfimenkov.task3;
 
+import org.omg.PortableServer.POA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +24,7 @@ public class Ship implements Runnable {
         this.isForLoad = false;
     }
 
-    public Ship(int num, Port port, int capacity, boolean isForLoad) {
+    public Ship(int num, Port port, int numOfContainers, boolean isForLoad) {
         this.shipNum = num;
         this.port = port;
         this.numOfContainers = numOfContainers;
@@ -43,7 +44,7 @@ public class Ship implements Runnable {
         System.out.printf("Корабль %d подошел к порту.\n", shipNum);
         try{
 
-            port.SEMAPHORE.acquire();
+            Port.SEMAPHORE.acquire();
             System.out.printf("Корабль %d проверяет есть ли свободный причал...\n", shipNum);
             int dockNum = -1;
 
@@ -57,13 +58,13 @@ public class Ship implements Runnable {
                     if(port.locker.isLocked()) System.out.printf("Корабль %d ожидает доступа к общему ресурсу\n", shipNum);
                     port.locker.lock();
                     if(this.isForLoad){
-                        port.removeContainers(this.capacity);
-                        System.out.printf("Корабль %d забрал %d контейнеров, общаая вместительность %d\n", shipNum, this.capacity, this.port.getCapacity());
+                        port.removeContainers(this.numOfContainers);
+                        System.out.printf("Корабль %d забрал %d контейнеров, общаая вместительность %d\n", shipNum, this.numOfContainers, this.port.getCapacity());
 
                     }
                     else{
-                        port.addContainers(this.capacity);
-                        System.out.printf("Корабль %d выгрузил %d контейнеров, общаая вместительность %d\n", shipNum, this.capacity, this.port.getCapacity());
+                        port.addContainers(this.numOfContainers);
+                        System.out.printf("Корабль %d выгрузил %d контейнеров, общаая вместительность %d\n", shipNum, this.numOfContainers, this.port.getCapacity());
                     }
 
                     break;
