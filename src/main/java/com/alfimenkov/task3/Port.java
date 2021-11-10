@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Port {
@@ -12,11 +13,12 @@ public class Port {
     protected static boolean[] DOCKS;
     private int  capacity;
     public ReentrantLock locker = new ReentrantLock();
+    public Condition condition = locker.newCondition();
     public static Semaphore SEMAPHORE;
     private static ShipDispatcher dispatcher;
     public BlockingQueue<Ship> queue = new LinkedBlockingQueue<>();
-    LinkedList<Ship> ships = new LinkedList<>();
 
+    
     public Port(int COUNT_DOCKS) {
 
         this.COUNT_DOCKS = COUNT_DOCKS;
@@ -42,27 +44,27 @@ public class Port {
         return COUNT_DOCKS;
     }
 
-    public void acquire() throws InterruptedException {
+    protected void acquire() throws InterruptedException {
 
         this.SEMAPHORE.acquire();
     }
 
-    public void release() {
+    protected void release() {
 
         this.SEMAPHORE.release();
     }
 
-    public void lock() {
+    protected void lock() {
 
         this.locker.lock();
     }
 
-    public void unlock() {
+    protected void unlock() {
 
         this.locker.unlock();
     }
 
-    public void addContainers(int value) {
+    protected void addContainers(int value) {
 
         int capacity = this.capacity;
 
@@ -70,24 +72,19 @@ public class Port {
         this.capacity = capacity;
     }
 
-    public void removeContainers(int value) {
+    protected void removeContainers(int value) {
 
         int capacity = this.capacity;
         capacity -= value;
         this.capacity = capacity;
     }
 
-    public void addShip(Ship ship) {
+    protected Ship take() throws InterruptedException {
 
-        this.ships.add(ship);
+        return this.queue.take();
     }
 
-    public void removeShip(Ship ship) {
-
-        this.ships.remove(ship);
-    }
-
-    public boolean hasEnoughContainers(Ship ship) {
+    protected boolean hasEnoughContainers(Ship ship) {
 
         if(ship.isForLoad() && ship.getNumOfContainers() > this.getCapacity()) return false;
         else return true;

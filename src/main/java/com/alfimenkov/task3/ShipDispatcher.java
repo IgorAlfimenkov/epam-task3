@@ -24,14 +24,12 @@ public class ShipDispatcher implements Runnable {
 
         try {
             while(true){
-                Ship ship = port.queue.take();
+                Ship ship = takeShip();
                 if(ship.isForLoad()){
-                    port.removeContainers(ship.getNumOfContainers());
-                    System.out.printf("Корабль %d забрал %d контейнеров. Общее число контейнеров в порту: %d \n", ship.getShipNum(), ship.getNumOfContainers(), this.port.getCapacity());
+                    removeContainers(ship);
                 }
                 else{
-                    port.addContainers(ship.getNumOfContainers());
-                    System.out.printf("Корабль %d выгрузил %d контейнеров. Общее число контейнеров в порту: %d \n", ship.getShipNum(), ship.getNumOfContainers(), this.port.getCapacity());
+                    addContainers(ship);
                 }
 
             }
@@ -39,4 +37,19 @@ public class ShipDispatcher implements Runnable {
         }catch (InterruptedException e) {}
     }
 
+    private void addContainers(Ship ship) {
+        port.addContainers(ship.getNumOfContainers());
+        System.out.printf("Корабль %d выгрузил %d контейнеров. Общее число контейнеров в порту: %d \n", ship.getShipNum(), ship.getNumOfContainers(), this.port.getCapacity());
+    }
+
+    private void removeContainers(Ship ship) {
+
+        port.removeContainers(ship.getNumOfContainers());
+        System.out.printf("Корабль %d забрал %d контейнеров. Общее число контейнеров в порту: %d \n", ship.getShipNum(), ship.getNumOfContainers(), this.port.getCapacity());
+    }
+
+    private Ship takeShip() throws InterruptedException {
+
+        return port.take();
+    }
 }

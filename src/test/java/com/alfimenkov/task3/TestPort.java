@@ -11,7 +11,7 @@ public class TestPort {
 
         //GIVEN
 
-        Port port = new Port(2);
+        Port port = new Port(3);
         Thread thread = new Thread(new Ship(1,port,5,true));
         Thread thread1 = new Thread(new Ship(2,port,10));
         Thread thread2 = new Thread(new Ship(3,port,15,true));

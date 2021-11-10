@@ -40,43 +40,25 @@ public class Ship extends Thread {
     public void run() {
 
         System.out.printf("Корабль %d подошел к порту.\n", shipNum);
-        port.addShip(this);
+
         try{
 
-            port.acquire();
-            System.out.printf("Корабль %d проверяет есть ли свободный причал...\n", shipNum);
+            checkFreeDock();
             int dockNum = -1;
 
             for (int i = 0; i < port.getCountDocks(); i++) {
 
                 if (port.DOCKS[i]) {
 
-                    port.DOCKS[i] = false;
                     dockNum = i;
-                    System.out.printf("Корабль %d подошел к причалу %d\n", shipNum, i);
-                    while(!port.hasEnoughContainers(this)){
-                        System.out.printf("Корабль %d ждет пока появятся контейнеры. Общее число контейнеров: %d\n", this.getShipNum(), port.getCapacity());
-                        ((Thread)this).sleep(1000);
-                    }
-                    if(port.locker.isLocked()) System.out.printf("Корабль %d ожидает доступа к общему ресурсу\n", shipNum);
-
-                    port.lock();
-                    port.queue.put(this);
-                    ((Thread)this).sleep(1000);
+                    enterDock(i);
                     break;
                 }
+
             }
 
-            port.DOCKS[dockNum] = true;
-            port.release();
-            System.out.printf("Корабль %d покинул порт\n", shipNum);
-
-        }catch (Exception e) {
-
-        }finally {
-            port.unlock();
-        }
-        port.removeShip(this);
+            releaseDock(dockNum);
+        }catch (Exception e) { }
     }
 
     public int getCapacity() {
@@ -93,6 +75,36 @@ public class Ship extends Thread {
 
     public int getShipNum() {
         return shipNum;
+    }
+
+    private void checkFreeDock() throws InterruptedException {
+        port.acquire();
+        System.out.printf("Корабль %d проверяет есть ли свободный причал...\n", shipNum);
+    }
+
+    private void enterDock(int i) throws InterruptedException {
+        port.DOCKS[i] = false;
+        System.out.printf("Корабль %d подошел к причалу %d\n", shipNum, i);
+        if(port.locker.isLocked()) System.out.printf("Корабль %d ожидает доступа к общему ресурсу\n", shipNum);
+        getAccessToSharedResource();
+    }
+
+    private void getAccessToSharedResource() throws InterruptedException {
+        port.lock();
+        if(!port.hasEnoughContainers(this)){
+            System.out.printf("Корабль %d ждет пока появятся контейнеры. Общее число контейнеров: %d\n", this.getShipNum(), port.getCapacity());
+            port.condition.await();
+        }
+        port.condition.signal();
+        port.queue.put(this);
+        ((Thread)this).sleep(1000);
+        port.unlock();
+    }
+
+    private void releaseDock( int dockNum) {
+        port.DOCKS[dockNum] = true;
+        port.release();
+        System.out.printf("Корабль %d покинул порт\n", shipNum);
     }
 
 }
