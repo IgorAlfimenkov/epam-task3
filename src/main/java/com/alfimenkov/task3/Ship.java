@@ -84,20 +84,12 @@ public class Ship extends Thread {
         return capacity;
     }
 
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
-    }
-
     public boolean isForLoad() {
         return isForLoad;
     }
 
     public int getNumOfContainers() {
         return numOfContainers;
-    }
-
-    public void setNumOfContainers(int numOfContainers) {
-        this.numOfContainers += numOfContainers;
     }
 
     public int getShipNum() {

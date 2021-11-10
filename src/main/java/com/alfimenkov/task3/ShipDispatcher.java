@@ -34,8 +34,4 @@ public class ShipDispatcher implements Runnable {
         }catch (InterruptedException e) {}
     }
 
-    public boolean isValid() {
-        if(ship.isForLoad() && ship.getNumOfContainers() > port.getCapacity()) return false;
-        else return true;
-    }
 }
