@@ -10,12 +10,14 @@ public class TestPort {
 
 
         //GIVEN
-        Port port = new Port(3);
-        Thread thread = new Thread(new Ship(1,port,5));
+
+        Port port = new Port(2);
+        Thread thread = new Thread(new Ship(1,port,5,true));
         Thread thread1 = new Thread(new Ship(2,port,10));
         Thread thread2 = new Thread(new Ship(3,port,15,true));
         Thread thread3 = new Thread(new Ship(4,port,20));
-        int expectedResult = 20;
+
+        int expectedResult = 10;
 
         //WHEN
         thread.start();
