@@ -13,7 +13,7 @@ public class Port {
     private int  capacity;
     public ReentrantLock locker = new ReentrantLock();
     public static Semaphore SEMAPHORE;
-    private ShipDispatcher dispatcher;
+    private static ShipDispatcher dispatcher;
     public BlockingQueue<Ship> queue = new LinkedBlockingQueue<>();
     LinkedList<Ship> ships = new LinkedList<>();
 
@@ -23,7 +23,7 @@ public class Port {
         DOCKS = new boolean[this.COUNT_DOCKS];
         setDOCKS();
         SEMAPHORE = new Semaphore(DOCKS.length, true);
-        dispatcher = new ShipDispatcher(this);
+        dispatcher = ShipDispatcher.getInstance(this);
         new Thread(dispatcher).start();
     }
 
