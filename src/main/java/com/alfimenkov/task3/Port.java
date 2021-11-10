@@ -1,10 +1,8 @@
 package com.alfimenkov.task3;
 
 import java.util.LinkedList;
-import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -87,11 +85,6 @@ public class Port {
     public void removeShip(Ship ship) {
 
         this.ships.remove(ship);
-    }
-
-    public boolean isValid(Ship ship){
-        if(ship.isForLoad() && ship.getNumOfContainers() > this.getCapacity()) return false;
-        else return true;
     }
 
     public boolean hasEnoughContainers(Ship ship) {

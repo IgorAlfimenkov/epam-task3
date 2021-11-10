@@ -1,10 +1,8 @@
 package com.alfimenkov.task3;
 
-import org.omg.PortableServer.POA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.locks.ReentrantLock;
 
 public class Ship extends Thread {
 
@@ -64,6 +62,7 @@ public class Ship extends Thread {
 
                     port.lock();
                     port.queue.put(this);
+                    ((Thread)this).sleep(1000);
                     break;
                 }
             }
