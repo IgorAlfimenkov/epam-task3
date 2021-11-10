@@ -1,5 +1,10 @@
 package com.alfimenkov.task3;
 
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -10,6 +15,9 @@ public class Port {
     private int  capacity;
     public ReentrantLock locker = new ReentrantLock();
     public static Semaphore SEMAPHORE;
+    private ShipDispatcher dispatcher;
+    public BlockingQueue<Ship> queue = new LinkedBlockingQueue<>();
+    LinkedList<Ship> ships = new LinkedList<>();
 
     public Port(int COUNT_DOCKS) {
 
@@ -17,6 +25,8 @@ public class Port {
         DOCKS = new boolean[this.COUNT_DOCKS];
         setDOCKS();
         SEMAPHORE = new Semaphore(DOCKS.length, true);
+        dispatcher = new ShipDispatcher(this);
+        new Thread(dispatcher).start();
     }
 
     public void setDOCKS() {
@@ -68,5 +78,27 @@ public class Port {
         capacity -= value;
         this.capacity = capacity;
     }
+
+    public void addShip(Ship ship) {
+
+        this.ships.add(ship);
+    }
+
+    public void removeShip(Ship ship) {
+
+        this.ships.remove(ship);
+    }
+
+    public boolean isValid(Ship ship){
+        if(ship.isForLoad() && ship.getNumOfContainers() > this.getCapacity()) return false;
+        else return true;
+    }
+
+    public boolean hasEnoughContainers(Ship ship) {
+
+        if(ship.isForLoad() && ship.getNumOfContainers() > this.getCapacity()) return false;
+        else return true;
+    }
+
 
 }

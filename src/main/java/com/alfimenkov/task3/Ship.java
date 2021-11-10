@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.locks.ReentrantLock;
 
-public class Ship implements Runnable {
+public class Ship extends Thread {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Ship.class);
 
@@ -42,9 +42,10 @@ public class Ship implements Runnable {
     public void run() {
 
         System.out.printf("Корабль %d подошел к порту.\n", shipNum);
+        port.addShip(this);
         try{
 
-            Port.SEMAPHORE.acquire();
+            port.acquire();
             System.out.printf("Корабль %d проверяет есть ли свободный причал...\n", shipNum);
             int dockNum = -1;
 
@@ -55,31 +56,44 @@ public class Ship implements Runnable {
                     port.DOCKS[i] = false;
                     dockNum = i;
                     System.out.printf("Корабль %d подошел к причалу %d\n", shipNum, i);
+                    while(!port.hasEnoughContainers(this)){
+                        System.out.printf("Корабль %d ждет пока появятся контейнеры. Общее число контейнеров: %d\n", this.getShipNum(), port.getCapacity());
+                        ((Thread)this).sleep(1000);
+                    }
                     if(port.locker.isLocked()) System.out.printf("Корабль %d ожидает доступа к общему ресурсу\n", shipNum);
-                    port.locker.lock();
-                    if(this.isForLoad){
-                        port.removeContainers(this.numOfContainers);
-                        System.out.printf("Корабль %d забрал %d контейнеров, общаая вместительность %d\n", shipNum, this.numOfContainers, this.port.getCapacity());
 
-                    }
-                    else{
-                        port.addContainers(this.numOfContainers);
-                        System.out.printf("Корабль %d выгрузил %d контейнеров, общаая вместительность %d\n", shipNum, this.numOfContainers, this.port.getCapacity());
-                    }
-
+                    port.lock();
+                    port.queue.put(this);
                     break;
                 }
             }
 
-            Port.DOCKS[dockNum] = true;
-            Port.SEMAPHORE.release();
+            port.DOCKS[dockNum] = true;
+            port.release();
             System.out.printf("Корабль %d покинул порт\n", shipNum);
 
-        }catch (InterruptedException e) {
+        }catch (Exception e) {
 
         }finally {
-            port.locker.unlock();
+            port.unlock();
         }
+        port.removeShip(this);
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public boolean isForLoad() {
+        return isForLoad;
+    }
+
+    public int getNumOfContainers() {
+        return numOfContainers;
+    }
+
+    public int getShipNum() {
+        return shipNum;
     }
 
 }
