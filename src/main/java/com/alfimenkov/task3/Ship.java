@@ -1,110 +1,113 @@
 package com.alfimenkov.task3;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Ship extends Thread {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Ship.class);
-
-    private int numOfContainers;
-    private int capacity;
     private int shipNum;
+    private List<Container> containers;
     private Port port;
-    private boolean isForLoad;
+    private ReentrantLock lock = new ReentrantLock();
+    Condition condition = lock.newCondition();
+    private int maxCapacity;
+    private boolean getFromStorage;
 
-
-    public Ship(int num, Port port, int numOfContainers) {
-        this.shipNum = num;
-        this.port = port;
-        this.numOfContainers = numOfContainers;
-        this.isForLoad = false;
-    }
-
-    public Ship(int num, Port port, int numOfContainers, boolean isForLoad) {
-        this.shipNum = num;
-        this.port = port;
-        this.numOfContainers = numOfContainers;
-        this.isForLoad = isForLoad;
-    }
-
-    public Ship(int shipNum, int numOfContainers, int capacity) {
-
+    public Ship(int shipNum, List<Container> containers, Port port, int capacity) {
         this.shipNum = shipNum;
-        this.numOfContainers = numOfContainers;
-        this.capacity = capacity;
+        this.containers = containers;
+        this.port = port;
+        this.maxCapacity = capacity;
+        containers.forEach(container -> container.setShipNum(shipNum));
+        this.getFromStorage = false;
+    }
+
+    public Ship(int shipNum, List<Container> containers, Port port, int capacity, boolean getFromStorage) {
+        this.shipNum = shipNum;
+        this.containers = containers;
+        this.port = port;
+        this.maxCapacity = capacity;
+        containers.forEach(container -> container.setShipNum(shipNum));
+        this.getFromStorage = getFromStorage;
     }
 
     @Override
     public void run() {
 
-        System.out.printf("Корабль %d подошел к порту.\n", shipNum);
+        try {
+            Dock dock = port.getDock();
+            System.out.printf("Корабль %d подошел к причалу %d\n", shipNum, dock.getDockNum());
+            releaseContainers(dock);
 
-        try{
+            prepareToLeavePort(dock);
 
-            checkFreeDock();
-            int dockNum = -1;
+            leavePort(dock);
 
-            for (int i = 0; i < port.getCountDocks(); i++) {
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
-                if (port.DOCKS[i]) {
+    public void releaseContainers(Dock dock) throws InterruptedException {
 
-                    dockNum = i;
-                    enterDock(i);
-                    break;
+        containers.forEach(container -> container.setDockNum(dock.getDockNum()));
+        containers.forEach(Thread::start);
+        containers.clear();
+        System.out.printf("Корабль %d выгрузил контейнеры на причале %d\n", shipNum, dock.getDockNum());
+        sleep((long) (100 + Math.random() * 300));
+    }
+
+    public void prepareToLeavePort(Dock dock) throws InterruptedException {
+
+        this.sleep(100);
+        int num = 1 + (int)(Math.random()*(maxCapacity+1));
+        if(getFromStorage == true){
+            System.out.printf("Корабль %d хочет забрать %d контейнеров со склада\n",shipNum, num);
+            if(!port.hasEnoughContainers(num))  System.out.printf("Корабль %d ждет пока появится достаточное количество контейнеров на складе\n",getShipNum());
+            port.loadShip(this,num);
+            sleep(100);
+        }
+        else if(!port.queueIsEmpty()) {
+            for(int i = 0; i < num; i++)
+            {
+                lock.lock();
+                Container container = port.takeContainerFromQueue();
+                if(container != null){
+                    add(container);
+                    System.out.printf("Корабль %d забрал контейнер %d\n", shipNum, container.getContainerNum());
                 }
+                lock.unlock();
 
             }
-
-            releaseDock(dockNum);
-        }catch (Exception e) { }
+        }
+        System.out.printf("Корабль %d забрал %d контейнеров. Общее количество контейнеров на складе: %d\n", shipNum,containers.size(), port.getStorageSize());
     }
 
-    public int getCapacity() {
-        return capacity;
+    public void leavePort(Dock dock) {
+
+        /*containers.forEach(container -> {
+            container.setOnShip(true);
+        });*/
+        dock.release();
+        System.out.printf("Корабль %d покинул порт\n",shipNum);
     }
 
-    public boolean isForLoad() {
-        return isForLoad;
+    public void add(Container container) {
+
+
+        containers.add(container);
     }
 
-    public int getNumOfContainers() {
-        return numOfContainers;
+    public void addAll(List<Container> containers) {
+
+
+        containers.addAll(containers);
+
     }
 
     public int getShipNum() {
         return shipNum;
     }
-
-    private void checkFreeDock() throws InterruptedException {
-        port.acquire();
-        System.out.printf("Корабль %d проверяет есть ли свободный причал...\n", shipNum);
-    }
-
-    private void enterDock(int i) throws InterruptedException {
-        port.DOCKS[i] = false;
-        System.out.printf("Корабль %d подошел к причалу %d\n", shipNum, i);
-        if(port.locker.isLocked()) System.out.printf("Корабль %d ожидает доступа к общему ресурсу\n", shipNum);
-        getAccessToSharedResource();
-    }
-
-    private void getAccessToSharedResource() throws InterruptedException {
-        port.lock();
-        if(!port.hasEnoughContainers(this)){
-            System.out.printf("Корабль %d ждет пока появятся контейнеры. Общее число контейнеров: %d\n", this.getShipNum(), port.getCapacity());
-            port.condition.await();
-        }
-        port.condition.signal();
-        port.queue.put(this);
-        ((Thread)this).sleep(1000);
-        port.unlock();
-    }
-
-    private void releaseDock( int dockNum) {
-        port.DOCKS[dockNum] = true;
-        port.release();
-        System.out.printf("Корабль %d покинул порт\n", shipNum);
-    }
-
 }

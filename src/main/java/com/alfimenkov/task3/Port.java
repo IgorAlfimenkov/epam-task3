@@ -1,6 +1,9 @@
 package com.alfimenkov.task3;
 
-import java.util.LinkedList;
+import com.alfimenkov.task3.Ship;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
@@ -9,86 +12,91 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Port {
 
-    private static int COUNT_DOCKS;
-    protected static boolean[] DOCKS;
-    private int  capacity;
-    public ReentrantLock locker = new ReentrantLock();
-    public Condition condition = locker.newCondition();
-    public static Semaphore SEMAPHORE;
-    private static ShipDispatcher dispatcher;
-    public BlockingQueue<Ship> queue = new LinkedBlockingQueue<>();
+    private List<Dock> docks;
+    private Semaphore semaphore;
+    private ReentrantLock lock = new ReentrantLock();
 
-    
-    public Port(int COUNT_DOCKS) {
+    private BlockingQueue<Container> containersForLoad = new LinkedBlockingQueue<>();
+    private List<Container> storage = new ArrayList<>();
+    private int maxCapacity;
 
-        this.COUNT_DOCKS = COUNT_DOCKS;
-        DOCKS = new boolean[this.COUNT_DOCKS];
-        setDOCKS();
-        SEMAPHORE = new Semaphore(DOCKS.length, true);
-        dispatcher = ShipDispatcher.getInstance(this);
-        new Thread(dispatcher).start();
+    public Port(List<Dock> docks, int maxCapacity) {
+        this.docks = docks;
+        this.maxCapacity = maxCapacity;
+        semaphore = new Semaphore(docks.size());
+        docks.forEach(dock -> dock.setSemaphore(semaphore));
     }
 
-    public void setDOCKS() {
-        for (int i = 0; i < COUNT_DOCKS; i++) {
+    public Dock getDock() throws InterruptedException {
 
-            DOCKS[i] = true;
+        semaphore.acquire();
+        lock.lock();
+        Dock dock = docks.stream().filter(d -> d.isFree()).findFirst().get();
+        dock.setBusy();
+        lock.unlock();
+        return dock;
+    }
+
+    public Dock getDockByNum(int num) {
+
+        return docks.get(num);
+    }
+
+    public int getMaxCapacity() {
+        return maxCapacity;
+    }
+
+    public int getStorageSize() {
+
+        return storage.size();
+    }
+
+    public void putContainerInQueue(Container container) throws InterruptedException {
+        containersForLoad.put(container);
+    }
+
+    public Container takeContainerFromQueue() throws InterruptedException {
+
+        return containersForLoad.take();
+    }
+
+    public void addContainerInStorage(Container container) {
+
+        if(storage.size() != maxCapacity) {
+
+            storage.add(container);
+            container.setLoaded();
+            System.out.printf("Контейнер %d был добавлен на склад. Общее количество контейнеров на складе: %d\n", container.getContainerNum(), storage.size());
         }
     }
 
-    public int getCapacity() {
-        return capacity;
+    public boolean queueIsEmpty() {
+
+        return containersForLoad.isEmpty();
     }
 
-    public static int getCountDocks() {
-        return COUNT_DOCKS;
+    public boolean hasEnoughContainers(double num) {
+
+        if(storage.size() > num) return true;
+        else return false;
     }
 
-    protected void acquire() throws InterruptedException {
+    public void loadShip(Ship ship, double num) throws InterruptedException {
 
-        this.SEMAPHORE.acquire();
+        while (storage.size() < num) {
+
+            ship.sleep(10);
+
+        }
+        List<Container> forLoad = new ArrayList<>();
+        for(int i = 0; i < num; i++) {
+
+            lock.lock();
+            ship.add(storage.get(i));
+            forLoad.add(storage.get(i));
+            lock.unlock();
+        }
+        storage.removeAll(forLoad);
     }
-
-    protected void release() {
-
-        this.SEMAPHORE.release();
-    }
-
-    protected void lock() {
-
-        this.locker.lock();
-    }
-
-    protected void unlock() {
-
-        this.locker.unlock();
-    }
-
-    protected void addContainers(int value) {
-
-        int capacity = this.capacity;
-
-        capacity += value;
-        this.capacity = capacity;
-    }
-
-    protected void removeContainers(int value) {
-
-        int capacity = this.capacity;
-        capacity -= value;
-        this.capacity = capacity;
-    }
-
-    protected Ship take() throws InterruptedException {
-
-        return this.queue.take();
-    }
-
-    protected boolean hasEnoughContainers(Ship ship) {
-
-        if(ship.isForLoad() && ship.getNumOfContainers() > this.getCapacity()) return false;
-        else return true;
-    }
-
 
 }
