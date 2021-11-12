@@ -2,6 +2,9 @@ package com.alfimenkov.task3;
 
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -12,10 +15,9 @@ public class Container extends Thread {
     private int containerNum;
     private int dockNum;
     private int shipNum;
-    public boolean isOnShip = false;
     public boolean isLoaded = false;
-    ReentrantLock lock = new ReentrantLock();
-    Condition condition = lock.newCondition();
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Container.class);
 
     public Container(Port port, int containerNum) {
         this.port = port;
@@ -29,23 +31,9 @@ public class Container extends Thread {
         try {
             sleep(100);
 
-           Dock dock = port.getDockByNum(dockNum);
+            Dock dock = port.getDockByNum(dockNum);
             port.putContainerInQueue(this);
-            System.out.printf("Контейнер %d стоит в очереди на загрузку на причале %d \n", containerNum, dockNum);
-
-            sleep(1000);
-
-           /* if(!isOnShip){
-                dock.leave(this);
-                //lock.lock();
-                *//*port.putContainerInQueue(this);*//*
-             *//*if (!isLoaded) {
-                    condition.await();
-                }
-                condition.signal();
-                lock.unlock();*//*
-            }*/
-
+            LOGGER.info("Container {} stay in queue in the dock {}",containerNum,dockNum);
 
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -59,14 +47,6 @@ public class Container extends Thread {
 
     public void setDockNum(int dockNum) {
         this.dockNum = dockNum;
-    }
-
-    public boolean isOnShip() {
-        return isOnShip;
-    }
-
-    public void setOnShip(boolean onShip) {
-        isOnShip = onShip;
     }
 
     public int getShipNum() {

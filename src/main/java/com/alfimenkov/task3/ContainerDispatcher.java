@@ -1,5 +1,8 @@
 package com.alfimenkov.task3;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ContainerDispatcher extends Thread {
@@ -8,6 +11,7 @@ public class ContainerDispatcher extends Thread {
     private ReentrantLock lock = new ReentrantLock();
     private static ContainerDispatcher instance;
     private boolean isStarted = false;
+    private static final Logger LOGGER = LoggerFactory.getLogger(Container.class);
 
     public ContainerDispatcher(Port port) {
         this.port = port;
@@ -29,8 +33,7 @@ public class ContainerDispatcher extends Thread {
 
             sleep(100);
             while (!port.allDockFree()){
-                //sleep(100);
-                if(port.getStorageSize() == port.getMaxCapacity()) System.out.printf("Недастаточно места на складе. Невозможно добавить контейнеры\n");
+                if(port.getStorageSize() == port.getMaxCapacity()) LOGGER.info("Not enough free space in storage. Unable to add containers.");
                 while (port.getStorageSize() == port.getMaxCapacity() && !port.allDockFree()) sleep(10);
 
                 if(!port.queueIsEmpty()){
@@ -46,7 +49,7 @@ public class ContainerDispatcher extends Thread {
             e.printStackTrace();
         }
         finally {
-            System.out.printf("Диспетчер закончил работу\n");
+            LOGGER.info("Dispatcher finished work...");
         }
     }
 

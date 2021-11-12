@@ -1,6 +1,8 @@
 package com.alfimenkov.task3;
 
 import com.alfimenkov.task3.Ship;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,14 +14,14 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Port {
 
-    private List<Dock> docks;
-    private Semaphore semaphore;
-    private ReentrantLock lock = new ReentrantLock();
-
-    private BlockingQueue<Container> containersForLoad = new LinkedBlockingQueue<>();
-    private List<Container> storage = new ArrayList<>();
     private int maxCapacity;
+    private List<Dock> docks;
+    private List<Container> storage = new ArrayList<>();
+    private BlockingQueue<Container> containersForLoad = new LinkedBlockingQueue<>();
+    private ReentrantLock lock = new ReentrantLock();
     private ContainerDispatcher dispatcher;
+    private Semaphore semaphore;
+    private static final Logger LOGGER = LoggerFactory.getLogger(Port.class);
 
     public Port(List<Dock> docks, int maxCapacity) {
         this.docks = docks;
@@ -69,7 +71,8 @@ public class Port {
 
             storage.add(container);
             container.setLoaded();
-            System.out.printf("Контейнер %d был добавлен на склад. Общее количество контейнеров на складе: %d\n", container.getContainerNum(), storage.size());
+            LOGGER.info("Container {} was added in storage. Total number of containers in storage: {}.", container.getContainerNum(),storage.size());
+            //System.out.printf("Контейнер %d был добавлен на склад. Общее количество контейнеров на складе: %d\n", container.getContainerNum(), storage.size());
         }
     }
 
@@ -106,7 +109,8 @@ public class Port {
         if(!dispatcher.isStarted()){
             dispatcher.setStarted();
             dispatcher.start();
-            System.out.printf("Диспетчер начал работу\n");
+            LOGGER.info("Dispatcher started...");
+            //System.out.printf("Диспетчер начал работу\n");
         }
     }
 

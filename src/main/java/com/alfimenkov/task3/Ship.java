@@ -1,5 +1,8 @@
 package com.alfimenkov.task3;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Condition;
@@ -13,6 +16,8 @@ public class Ship extends Thread {
     private ReentrantLock lock = new ReentrantLock();
     private int maxCapacity;
     private boolean getFromStorage;// If ship wants to get Containers from storage
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Ship.class);
 
     public Ship(int shipNum, List<Container> containers, Port port, int capacity) {
         this.shipNum = shipNum;
@@ -37,7 +42,7 @@ public class Ship extends Thread {
 
         try {
             Dock dock = port.getDock();
-            System.out.printf("Корабль %d подошел к причалу %d\n", shipNum, dock.getDockNum());
+            LOGGER.info("Ship {} enter dock {}.",shipNum,dock.getDockNum());
             releaseContainers(dock);
 
             prepareToLeavePort(dock);
@@ -54,7 +59,7 @@ public class Ship extends Thread {
         containers.forEach(container -> container.setDockNum(dock.getDockNum()));
         containers.forEach(Thread::start);
         containers.clear();
-        System.out.printf("Корабль %d выгрузил контейнеры на причале %d\n", shipNum, dock.getDockNum());
+        LOGGER.info("Ship {} leave containers in dock {}", shipNum,dock.getDockNum());
         sleep((long) (100 + Math.random() * 300));
     }
 
@@ -63,8 +68,8 @@ public class Ship extends Thread {
         this.sleep(100);
         int num = 1 + (int)(Math.random()*(maxCapacity+1));
         if(getFromStorage == true){
-            System.out.printf("Корабль %d хочет забрать %d контейнеров со склада\n",shipNum, num);
-            if(!port.hasEnoughContainers(num))  System.out.printf("Корабль %d ждет пока появится достаточное количество контейнеров на складе\n",getShipNum());
+            LOGGER.info("Ship {} wants to get {} containers from storage.",shipNum, num);
+            if(!port.hasEnoughContainers(num)) LOGGER.info("Ship {} waiting until there are enough containers in the storage",shipNum);
             port.loadShip(this,num);
             sleep(100);
         }
@@ -76,37 +81,22 @@ public class Ship extends Thread {
                     lock.lock();
                     Container container = port.takeContainerFromQueue();
                     add(container);
-                    System.out.printf("Корабль %d забрал контейнер %d\n", shipNum, container.getContainerNum());
+                    LOGGER.info("Ship {} take container {}", shipNum,container.getContainerNum());
                     lock.unlock();
                 }
             }
         }
-        System.out.printf("Корабль %d забрал %d контейнеров. Общее количество контейнеров на складе: %d\n", shipNum,containers.size(), port.getStorageSize());
+        LOGGER.info("Ship {} take {} containers. Total number of containers in storage: {}",shipNum,containers.size(),port.getStorageSize());
     }
 
     public void leavePort(Dock dock) {
-
-        /*containers.forEach(container -> {
-            container.setOnShip(true);
-        });*/
         dock.release();
-        System.out.printf("Корабль %d покинул порт\n",shipNum);
+        LOGGER.info("Ship {} leave port...", shipNum);
     }
 
     public void add(Container container) {
 
 
         containers.add(container);
-    }
-
-    public void addAll(List<Container> containers) {
-
-
-        containers.addAll(containers);
-
-    }
-
-    public int getShipNum() {
-        return shipNum;
     }
 }
