@@ -19,12 +19,14 @@ public class Port {
     private BlockingQueue<Container> containersForLoad = new LinkedBlockingQueue<>();
     private List<Container> storage = new ArrayList<>();
     private int maxCapacity;
+    private ContainerDispatcher dispatcher;
 
     public Port(List<Dock> docks, int maxCapacity) {
         this.docks = docks;
         this.maxCapacity = maxCapacity;
         semaphore = new Semaphore(docks.size());
         docks.forEach(dock -> dock.setSemaphore(semaphore));
+        dispatcher = ContainerDispatcher.getInstance(this);
     }
 
     public Dock getDock() throws InterruptedException {
@@ -34,6 +36,7 @@ public class Port {
         Dock dock = docks.stream().filter(d -> d.isFree()).findFirst().get();
         dock.setBusy();
         lock.unlock();
+        startDispatcher();
         return dock;
     }
 
@@ -97,6 +100,18 @@ public class Port {
             lock.unlock();
         }
         storage.removeAll(forLoad);
+    }
+
+    public void startDispatcher() {
+        if(!dispatcher.isStarted()){
+            dispatcher.setStarted();
+            dispatcher.start();
+            System.out.printf("Диспетчер начал работу\n");
+        }
+    }
+
+    public boolean allDockFree() {
+        return docks.stream().allMatch(Dock::isFree);
     }
 
 }

@@ -11,9 +11,8 @@ public class Ship extends Thread {
     private List<Container> containers;
     private Port port;
     private ReentrantLock lock = new ReentrantLock();
-    Condition condition = lock.newCondition();
     private int maxCapacity;
-    private boolean getFromStorage;
+    private boolean getFromStorage;// If ship wants to get Containers from storage
 
     public Ship(int shipNum, List<Container> containers, Port port, int capacity) {
         this.shipNum = shipNum;
@@ -69,17 +68,17 @@ public class Ship extends Thread {
             port.loadShip(this,num);
             sleep(100);
         }
-        else if(!port.queueIsEmpty()) {
+        else {
             for(int i = 0; i < num; i++)
             {
-                lock.lock();
-                Container container = port.takeContainerFromQueue();
-                if(container != null){
+
+                if(!port.queueIsEmpty()){
+                    lock.lock();
+                    Container container = port.takeContainerFromQueue();
                     add(container);
                     System.out.printf("Корабль %d забрал контейнер %d\n", shipNum, container.getContainerNum());
+                    lock.unlock();
                 }
-                lock.unlock();
-
             }
         }
         System.out.printf("Корабль %d забрал %d контейнеров. Общее количество контейнеров на складе: %d\n", shipNum,containers.size(), port.getStorageSize());
