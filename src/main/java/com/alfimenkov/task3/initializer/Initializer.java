@@ -1,4 +1,9 @@
-package com.alfimenkov.task3;
+package com.alfimenkov.task3.initializer;
+
+import com.alfimenkov.task3.entity.Container;
+import com.alfimenkov.task3.entity.Dock;
+import com.alfimenkov.task3.entity.Port;
+import com.alfimenkov.task3.entity.Ship;
 
 import java.util.ArrayList;
 import java.util.List;

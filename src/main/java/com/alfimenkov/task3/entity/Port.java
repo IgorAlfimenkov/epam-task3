@@ -1,6 +1,6 @@
-package com.alfimenkov.task3;
+package com.alfimenkov.task3.entity;
 
-import com.alfimenkov.task3.Ship;
+import com.alfimenkov.task3.dispatcher.ContainerDispatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Port {

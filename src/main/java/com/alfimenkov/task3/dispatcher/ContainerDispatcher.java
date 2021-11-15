@@ -1,5 +1,7 @@
-package com.alfimenkov.task3;
+package com.alfimenkov.task3.dispatcher;
 
+import com.alfimenkov.task3.entity.Container;
+import com.alfimenkov.task3.entity.Port;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

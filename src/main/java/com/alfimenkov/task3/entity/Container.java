@@ -1,12 +1,9 @@
-package com.alfimenkov.task3;
+package com.alfimenkov.task3.entity;
 
 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class Container extends Thread {
 
@@ -33,6 +30,7 @@ public class Container extends Thread {
 
             Dock dock = port.getDockByNum(dockNum);
             port.putContainerInQueue(this);
+            /*System.out.printf("\n");*/
             LOGGER.info("Container {} stay in queue in the dock {}",containerNum,dockNum);
 
         } catch (InterruptedException e) {

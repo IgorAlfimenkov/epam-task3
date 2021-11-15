@@ -1,11 +1,6 @@
-package com.alfimenkov.task3;
+package com.alfimenkov.task3.entity;
 
-import com.alfimenkov.task3.Container;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class Dock {
 
