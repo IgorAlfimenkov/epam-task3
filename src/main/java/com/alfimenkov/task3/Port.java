@@ -44,7 +44,11 @@ public class Port {
 
     public Dock getDockByNum(int num) {
 
-        return docks.get(num);
+        return docks.get(num );
+    }
+
+    public ContainerDispatcher getDispatcher() {
+        return dispatcher;
     }
 
     public int getMaxCapacity() {
@@ -72,7 +76,6 @@ public class Port {
             storage.add(container);
             container.setLoaded();
             LOGGER.info("Container {} was added in storage. Total number of containers in storage: {}.", container.getContainerNum(),storage.size());
-            //System.out.printf("Контейнер %d был добавлен на склад. Общее количество контейнеров на складе: %d\n", container.getContainerNum(), storage.size());
         }
     }
 
@@ -110,7 +113,6 @@ public class Port {
             dispatcher.setStarted();
             dispatcher.start();
             LOGGER.info("Dispatcher started...");
-            //System.out.printf("Диспетчер начал работу\n");
         }
     }
 
@@ -119,3 +121,4 @@ public class Port {
     }
 
 }
+

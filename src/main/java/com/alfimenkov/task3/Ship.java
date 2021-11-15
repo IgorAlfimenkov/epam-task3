@@ -59,17 +59,19 @@ public class Ship extends Thread {
         containers.forEach(container -> container.setDockNum(dock.getDockNum()));
         containers.forEach(Thread::start);
         containers.clear();
+
         LOGGER.info("Ship {} leave containers in dock {}", shipNum,dock.getDockNum());
         sleep((long) (100 + Math.random() * 300));
     }
 
     public void prepareToLeavePort(Dock dock) throws InterruptedException {
 
-        this.sleep(100);
+        sleep(100);
         int num = 1 + (int)(Math.random()*(maxCapacity+1));
         if(getFromStorage == true){
             LOGGER.info("Ship {} wants to get {} containers from storage.",shipNum, num);
-            if(!port.hasEnoughContainers(num)) LOGGER.info("Ship {} waiting until there are enough containers in the storage",shipNum);
+            if(!port.hasEnoughContainers(num))
+                LOGGER.info("Ship {} waiting until there are enough containers in the storage",shipNum);
             port.loadShip(this,num);
             sleep(100);
         }
@@ -98,5 +100,9 @@ public class Ship extends Thread {
 
 
         containers.add(container);
+    }
+
+    public void setGetFromStorage(boolean getFromStorage) {
+        this.getFromStorage = getFromStorage;
     }
 }

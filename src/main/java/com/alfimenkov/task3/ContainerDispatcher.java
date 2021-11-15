@@ -31,7 +31,6 @@ public class ContainerDispatcher extends Thread {
 
         try {
 
-            sleep(100);
             while (!port.allDockFree()){
                 if(port.getStorageSize() == port.getMaxCapacity()) LOGGER.info("Not enough free space in storage. Unable to add containers.");
                 while (port.getStorageSize() == port.getMaxCapacity() && !port.allDockFree()) sleep(10);
@@ -43,14 +42,21 @@ public class ContainerDispatcher extends Thread {
                     lock.unlock();
                 }
 
+                sleep(100);
             }
 
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         finally {
+            finishDispatcher();
             LOGGER.info("Dispatcher finished work...");
         }
+    }
+
+    public void finishDispatcher() {
+
+        isStarted = false;
     }
 
     public boolean isStarted() {

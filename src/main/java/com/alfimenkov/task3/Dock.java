@@ -10,9 +10,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Dock {
 
     private int dockNum;
-    private List<Container> containers = new ArrayList<>();
     private Semaphore semaphore;
-    private ReentrantLock lock = new ReentrantLock();
     private boolean free = true;
 
 
@@ -23,8 +21,6 @@ public class Dock {
     public void setSemaphore(Semaphore semaphore) {
         this.semaphore = semaphore;
     }
-
-
 
     public boolean isFree() {
         return free;
@@ -42,27 +38,9 @@ public class Dock {
         semaphore.release();
     }
 
-    public List<Container> getContainers() {
-
-        return containers;
-    }
-
-    public void addForLoad(Container container) {
-
-        lock.lock();
-        containers.add(container);
-        lock.unlock();
-    }
-
     public int getDockNum () {
 
         return dockNum;
     }
 
-    public void leave(Container container) {
-
-        lock.lock();
-        containers.remove(container);
-        lock.unlock();
-    }
 }
