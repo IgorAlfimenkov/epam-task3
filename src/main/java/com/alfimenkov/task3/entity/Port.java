@@ -4,8 +4,10 @@ import com.alfimenkov.task3.dispatcher.ContainerDispatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
@@ -15,11 +17,12 @@ public class Port {
 
     private int maxCapacity;
     private List<Dock> docks;
-    private List<Container> storage = new ArrayList<>();
+    private Queue<Container> storage =  new ArrayDeque<>();
     private BlockingQueue<Container> containersForLoad = new LinkedBlockingQueue<>();
     private ReentrantLock lock = new ReentrantLock();
     private ContainerDispatcher dispatcher;
     private Semaphore semaphore;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Port.class);
 
     public Port(List<Dock> docks, int maxCapacity) {
@@ -100,11 +103,11 @@ public class Port {
         for(int i = 0; i < num; i++) {
 
             lock.lock();
-            ship.add(storage.get(i));
-            forLoad.add(storage.get(i));
+            Container container = storage.poll();
+            ship.add(container);
+            LOGGER.info("Container {} was added on ship {}", container.getContainerNum(),ship.getShipNum());
             lock.unlock();
         }
-        storage.removeAll(forLoad);
     }
 
     public void startDispatcher() {

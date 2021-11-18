@@ -52,6 +52,10 @@ public class Ship extends Thread {
         }
     }
 
+    public int getShipNum() {
+        return shipNum;
+    }
+
     public void releaseContainers(Dock dock) throws InterruptedException {
 
         containers.forEach(container -> container.setDockNum(dock.getDockNum()));

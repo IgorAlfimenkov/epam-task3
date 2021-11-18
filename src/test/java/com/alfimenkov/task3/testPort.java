@@ -1,15 +1,13 @@
 package com.alfimenkov.task3;
 
-import org.junit.Assert;
+import com.alfimenkov.task3.entity.Dock;
+import com.alfimenkov.task3.entity.Port;
+import com.alfimenkov.task3.entity.Ship;
+import com.alfimenkov.task3.initializer.Initializer;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 
-import java.util.ArrayList;
-import java.util.Currency;
-import java.util.logging.Handler;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static org.junit.Assert.assertEquals;
 
